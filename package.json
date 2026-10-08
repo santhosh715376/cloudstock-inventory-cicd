@@ -1,0 +1,25 @@
+{
+  "name": "cloudstock",
+  "version": "1.0.0",
+  "description": "A professional CI/CD-enabled inventory management system designed to solve complex concurrency problems in high-traffic eCommerce scenarios.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "cross-env DATABASE_HOST=127.0.0.1 DATABASE_PORT=3307 jest tests/ --runInBand",
+    "test:concurrency": "cross-env DATABASE_HOST=127.0.0.1 DATABASE_PORT=3307 jest tests/concurrency.test.js --runInBand",
+    "test:integration": "cross-env DATABASE_HOST=127.0.0.1 DATABASE_PORT=3307 jest tests/backend.test.js --runInBand"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jest": "^30.5.2",
+    "supertest": "^7.3.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
+  }
+}

@@ -1,0 +1,44 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo "Installing root dependencies..."
+      - npm ci
+      - echo "Installing backend dependencies..."
+      - cd backend && npm ci && cd ..
+      - echo "Installing frontend dependencies..."
+      - cd frontend && npm ci && cd ..
+  pre_build:
+    commands:
+      - echo "Starting MySQL database for integration testing..."
+      - docker compose up -d mysql
+      - echo "Waiting for MySQL to become healthy..."
+      - sleep 15
+  build:
+    commands:
+      - echo "Running Automated and Concurrency Tests..."
+      - npm run test
+      - echo "Building Frontend static assets..."
+      - cd frontend && npm run build && cd ..
+  post_build:
+    commands:
+      - echo "Build and Tests complete."
+      - echo "Preparing artifacts for CodeDeploy..."
+
+artifacts:
+  files:
+    - 'backend/**/*'
+    - 'frontend/dist/**/*'
+    - 'database/**/*'
+    - 'scripts/**/*'
+    - 'appspec.yml'
+    - 'package.json'
+  discard-paths: no
+  exclude-paths:
+    - 'backend/node_modules/**/*'
+    - 'frontend/node_modules/**/*'
+    - 'node_modules/**/*'
+    - '**/.env'
