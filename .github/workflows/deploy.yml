@@ -73,7 +73,25 @@ jobs:
         with:
           name: cloudstock-deployment
 
+      - name: Check Deployment Secrets
+        id: deployment_secrets
+        run: |
+          missing_secrets=()
+          [ -z "${{ secrets.EC2_HOST }}" ] && missing_secrets+=("EC2_HOST")
+          [ -z "${{ secrets.EC2_USERNAME }}" ] && missing_secrets+=("EC2_USERNAME")
+          [ -z "${{ secrets.EC2_SSH_KEY }}" ] && missing_secrets+=("EC2_SSH_KEY")
+          [ -z "${{ secrets.EC2_APP_DIR }}" ] && missing_secrets+=("EC2_APP_DIR")
+
+          if [ "${#missing_secrets[@]}" -gt 0 ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping deployment because required repository secrets are missing: ${missing_secrets[*]}"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "All required deployment secrets are configured."
+          fi
+
       - name: Transfer Artifact to EC2
+        if: steps.deployment_secrets.outputs.configured == 'true'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -83,6 +101,7 @@ jobs:
           target: "/tmp"
 
       - name: Deploy to EC2
+        if: steps.deployment_secrets.outputs.configured == 'true'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
